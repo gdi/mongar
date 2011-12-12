@@ -67,8 +67,15 @@ describe "Mongar" do
   end
   
   describe "#run" do
-    it "should do something" do
-      
+    before do
+      @mongar = Mongar.new
+      @replica = Mongar::Replica.new
+      @mongar.replicas = [@replica]
+    end
+    
+    it "should call run on each replica" do
+      @replica.should_receive(:run)
+      @mongar.run
     end
   end
 end

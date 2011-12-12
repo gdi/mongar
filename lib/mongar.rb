@@ -21,6 +21,12 @@ class Mongar
     self.replicas = []
   end
   
+  def run
+    replicas.each do |replica|
+      replica.run
+    end
+  end
+  
   def replicate(what, &block)
     if what.is_a?(Hash)
       source = what.keys.first

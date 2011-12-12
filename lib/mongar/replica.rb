@@ -11,6 +11,8 @@ class Mongar
       self.mongodb_name = args[:mongodb_name] || :default
       self.columns = []
       
+      self.destination.replica = self if self.destination
+      
       self.deleted_finder = lambda do |last_replicated_at|
         find_every_with_deleted(:conditions => ["deleted_at > ?", last_replicated_at])
       end
@@ -20,6 +22,45 @@ class Mongar
       self.updated_finder = Proc.new do |last_replicated_at|
         find(:all, :conditions => ["updated_at > ? AND deleted_at IS NULL", last_replicated_at])
       end 
+    end
+    
+    def run
+      if do_full_refresh?
+        
+      else
+        last_replicated_at = mongodb.last_replicated_at
+        
+        # find deleted
+        find(:deleted, last_replicated_at).each do |deleted_item|
+          destination.delete! source_object_to_primary_key_hash(deleted_item)
+        end
+        
+        # find created
+        find(:created, last_replicated_at).each do |created_item|
+          destination.create! source_object_to_hash(created_item)
+        end
+        
+        # find updated
+        find(:updated, last_replicated_at).each do |updated_item|
+          destination.update! source_object_to_primary_key_hash(updated_item), source_object_to_hash(updated_item, true)
+        end
+      end
+    end
+    
+    def source_object_to_hash(object, exclude_primary_index = false)
+      primary_index_name = self.primary_index.name.to_sym
+      columns.inject({}) do |hash, column|
+        name = column.name.to_sym
+        unless name == primary_index_name && exclude_primary_index
+          hash[name] = object.send(name)
+        end
+        hash
+      end
+    end
+    
+    def source_object_to_primary_key_hash(object)
+      column_name = primary_index.name.to_sym
+      { column_name => object.send(column_name) }
     end
     
     def column(name, &block)

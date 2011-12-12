@@ -5,6 +5,112 @@ describe "Mongar::Replica" do
     @replica = Mongar::Replica.new
   end
   
+  describe "#run" do
+    before do
+      class Client
+        attr_accessor :name, :employee_count
+        def initialize(args)
+          args.each do |key, value|
+            self.send(:"#{key}=", value)
+          end
+        end
+      end
+      
+      @collection = Mongar::Mongo::Collection.new(:name => "clients")
+      @replica = Mongar::Replica.new(:source => Client, :destination => @collection)
+      @replica.column :name do
+        primary_index
+      end
+      @replica.column :employee_count
+      
+      @mongo = Mongar::Mongo.new
+      Mongar::Mongo.databases[:default] = @mongo
+      
+      @last_replicated_time = Time.now - 86400
+      @mongo.stub!(:last_replicated_at).and_return(@last_replicated_time)
+    end
+    
+    context "requiring a full refresh" do
+      before do
+        @replica.stub!(:do_full_refresh?).and_return(true)
+      end
+      it "should " do
+        
+      end
+    end
+    
+    context "not requiring a full refresh" do
+      before do
+        @replica.stub!(:do_full_refresh?).and_return(false)
+        
+        @deleted_client1 = Client.new(:name => "Widget Co", :employee_count => 500)
+        @replica.stub!(:find).with(:deleted, @last_replicated_time).and_return([@deleted_client1])
+        
+        @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
+        @replica.stub!(:find).with(:created, @last_replicated_time).and_return([@created_client1])
+        
+        @updated_client1 = Client.new(:name => "ABC Co", :employee_count => 700)
+        @replica.stub!(:find).with(:updated, @last_replicated_time).and_return([@updated_client1])
+        
+        @collection.stub!(:delete!)
+        @collection.stub!(:create!)
+        @collection.stub!(:update!)
+      end
+      it "should delete the items in the destination database" do
+        @collection.should_receive(:delete!).with({ :name => 'Widget Co' })
+        @replica.run
+      end
+      
+      it "should create the items in the destination database" do
+        @collection.should_receive(:create!).with({ :name => 'Otis Co', :employee_count => 600 })
+        @replica.run
+      end
+      
+      it "should update the items in the destination database" do
+        @collection.should_receive(:update!).with({ :name => 'ABC Co' }, { :employee_count => 700 })
+        @replica.run
+      end
+    end
+  end
+  
+  describe "#source_object_to_hash and #source_object_to_primary_key_hash" do
+    before do
+      class Client
+        attr_accessor :name, :employee_count, :something_else
+        def initialize(args)
+          args.each do |key, value|
+            self.send(:"#{key}=", value)
+          end
+        end
+      end
+
+      @collection = Mongar::Mongo::Collection.new(:name => "clients")
+      @replica = Mongar::Replica.new(:source => Client, :destination => @collection)
+      @replica.column :name do
+        primary_index
+      end
+      @replica.column :employee_count
+
+      @client1 = Client.new(:name => "Widget Co", :employee_count => 500)
+    end
+    it "should return a hash of all the columns" do
+      @replica.source_object_to_hash(@client1).should == {:name => "Widget Co", :employee_count => 500}
+    end
+    it "should return a hash of just the primary key column and value" do
+      @replica.source_object_to_primary_key_hash(@client1).should == {:name => "Widget Co"}
+    end
+  end
+  
+  describe "#new" do
+    before do
+      @collection = Mongar::Mongo::Collection.new(:name => 'clients')
+      @replica = Mongar::Replica.new(:destination => @collection)
+    end
+    it "should set the parent replica of the new collection" do
+      @replica.destination.replica.should == @replica
+    end
+  end
+  
   describe "#find" do
     before do
       class Client; end

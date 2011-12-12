@@ -21,8 +21,8 @@ Mongar.configure do
     full_refresh :every => 60.minutes
     
     column :uri do
+      primary_index
       transform :downcase
-      index
     end
     
     column :allow_anyone_to_anyone_policy
@@ -45,6 +45,7 @@ Mongar.configure do
     end
     
     column :address do
+      index
       transform do |value|
         # some code to perform on the value
       end

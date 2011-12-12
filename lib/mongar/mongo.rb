@@ -34,11 +34,26 @@ class Mongar
       @connection = nil
     end
     
-      # database 'mydb'
-      #      user 'mongouser'
-      #      password 'password'
-      #      host '127.0.0.1'
-      #      port 27017
-      #      status_collection :statuses
+    def connection!
+      connection or raise StandardError, "Could not establish '#{name}' MongoDB connection for #{database} at #{host}:#{port}"
+    end
+    
+    
+    def last_replicated_at
+      #connection!.find(:collection_name => name).first
+    end
+    
+    def last_replicated_at=(date)
+    end
+    
+    def last_refreshed_at
+    end
+    
+    def last_refreshed_at=(date)
+    end
+    
+    def refreshed!
+      last_refreshed_at = Time.now
+    end
   end
 end
