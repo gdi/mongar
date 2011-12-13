@@ -27,7 +27,7 @@ describe "Mongar::Replica" do
       Mongar::Mongo.databases[:default] = @mongo
       
       @last_replicated_time = Time.now - 86400
-      @mongo.stub!(:last_replicated_at).and_return(@last_replicated_time)
+      @collection.stub!(:last_replicated_at).and_return(@last_replicated_time)
       
       @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
     end
@@ -40,6 +40,7 @@ describe "Mongar::Replica" do
         @collection.stub!(:create_or_update!)
         @collection.stub!(:mark_all_items_pending_deletion!)
         @collection.stub!(:delete_all_items_pending_deletion!)
+        @collection.stub!(:last_replicated_at=)
       end
       it "should create or update the items in the destination database" do
         @collection.should_receive(:create_or_update!).with({ :name => 'Otis Co'}, { :name => 'Otis Co', :employee_count => 600 })
@@ -57,6 +58,8 @@ describe "Mongar::Replica" do
     
     context "not requiring a full refresh" do
       before do
+        @time = Time.parse("1/1/2011 00:00:00")
+        Time.stub!(:now).and_return(@time)
         @replica.stub!(:do_full_refresh?).and_return(false)
         
         @deleted_client1 = Client.new(:name => "Widget Co", :employee_count => 500)
@@ -68,8 +71,9 @@ describe "Mongar::Replica" do
         @replica.stub!(:find).with(:created, @last_replicated_time).and_return([@created_client1])
 
         @collection.stub!(:delete!)
-        @collection.stub!(:create!)
+        @collection.stub!(:create_or_update!)
         @collection.stub!(:update!)
+        @collection.stub!(:last_replicated_at=)
       end
       it "should delete the items in the destination database" do
         @collection.should_receive(:delete!).with({ :name => 'Widget Co' })
@@ -77,12 +81,17 @@ describe "Mongar::Replica" do
       end
       
       it "should create the items in the destination database" do
-        @collection.should_receive(:create!).with({ :name => 'Otis Co', :employee_count => 600 })
+        @collection.should_receive(:create_or_update!).with({ :name => 'Otis Co' }, { :name => 'Otis Co', :employee_count => 600 })
         @replica.run
       end
       
       it "should update the items in the destination database" do
         @collection.should_receive(:update!).with({ :name => 'ABC Co' }, { :employee_count => 700 })
+        @replica.run
+      end
+      
+      it "should set the last replicated at time to the time the run started" do
+        @collection.should_receive(:last_replicated_at=).with(@time)
         @replica.run
       end
     end
@@ -185,15 +194,15 @@ describe "Mongar::Replica" do
         @replica.no_deleted_finder
       end
 
-        it "should not try to find anything" do
-          Client.should_not_receive(:find_every_with_deleted)
-          Client.should_not_receive(:find)
-          @replica.find(:deleted, @date_time)
-        end
+      it "should not try to find anything" do
+        Client.should_not_receive(:find_every_with_deleted)
+        Client.should_not_receive(:find)
+        @replica.find(:deleted, @date_time)
+      end
 
-        it "should return an empty array" do
-          @replica.find(:deleted, @date_time).should == []
-        end
+      it "should return an empty array" do
+        @replica.find(:deleted, @date_time).should == []
+      end
     end
   end
   
@@ -270,7 +279,8 @@ describe "Mongar::Replica" do
     before do
       @time = Time.now
       @mongo = Mongar::Mongo.new
-      @mongo.stub!(:last_replicated_at).and_return(@time)
+      @collection = Mongar::Mongo::Collection.new(:name => 'clients')
+      @collection.stub!(:last_replicated_at).and_return(@time)
       @replica.stub!(:mongodb).and_return(@mongo)
       @replica.destination = @collection
     end
@@ -284,11 +294,11 @@ describe "Mongar::Replica" do
         @replica.do_full_refresh?.should be_false
       end
       it "should return true if the time since the last refresh is 60 minutes" do
-        @mongo.stub!(:last_replicated_at).and_return(@time - 3601)
+        @collection.stub!(:last_replicated_at).and_return(@time - 3601)
         @replica.do_full_refresh?.should be_true
       end
       it "should return true if the last refresh time is nil" do
-        @mongo.stub!(:last_replicated_at).and_return(nil)
+        @collection.stub!(:last_replicated_at).and_return(nil)
         @replica.do_full_refresh?.should be_true
       end
     end

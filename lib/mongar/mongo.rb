@@ -1,3 +1,4 @@
+require 'mongo'
 class Mongar
   class Mongo
     autoload :Collection, 'mongar/mongo/collection'
@@ -28,7 +29,7 @@ class Mongar
     end
     
     def connection
-      @connection = Mongo::Connection.new(host, port).db(database)
+      @connection = ::Mongo::Connection.new(host, port)
       return @connection if self.user.nil? || @connection.authenticate(user, password)
       @connection.close
       @connection = nil
@@ -38,6 +39,13 @@ class Mongar
       connection or raise StandardError, "Could not establish '#{name}' MongoDB connection for #{database} at #{host}:#{port}"
     end
     
+    def db
+      @db ||= connection!.db(database.to_s)
+    end
+    
+    def status_collection_accessor
+      db[status_collection]
+    end
     
     def last_replicated_at
       #connection!.find(:collection_name => name).first

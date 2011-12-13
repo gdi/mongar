@@ -25,6 +25,7 @@ class Mongar
     end
     
     def run
+      time = Time.now
       if do_full_refresh?
         destination.mark_all_items_pending_deletion!
         
@@ -32,10 +33,11 @@ class Mongar
         
         destination.delete_all_items_pending_deletion!
       else
-        last_replicated_at = mongodb.last_replicated_at
+        last_replicated_at = destination.last_replicated_at
         
-        run_sync_for([:deleted, :created, :updated], last_replicated_at)
+        run_sync_for([:deleted, :created_or_updated, :updated], last_replicated_at)
       end
+      destination.last_replicated_at = time
     end
     
     def run_sync_for(types = [], last_replicated_at)
@@ -114,7 +116,7 @@ class Mongar
     end
     
     def do_full_refresh?(last_replicated_time = nil)
-      last_replicated_time ||= mongodb.last_replicated_at
+      last_replicated_time ||= destination.last_replicated_at
       
       if @full_refresh.nil?
         false
