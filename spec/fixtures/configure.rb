@@ -39,9 +39,9 @@ Mongar.configure do
       created_scope(last_replicated_date)
     end
     
-    full_refresh :if => Proc.new do
+    full_refresh :if => Proc.new do |last_replicated_date|
       # class eval'ed code
-      any_changes?
+      any_changes_since?(last_replicated_date)
     end
     
     column :address do

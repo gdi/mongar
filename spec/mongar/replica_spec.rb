@@ -235,7 +235,7 @@ describe "Mongar::Replica" do
       end
     
       it "should take :if as an argument and save the block" do
-        @proc = Proc.new {}
+        @proc = Proc.new { |something| }
         @replica.full_refresh :if => @proc
         @replica.instance_variable_get(:"@full_refresh").should == @proc
       end
@@ -252,24 +252,28 @@ describe "Mongar::Replica" do
   end
   
   describe "#do_full_refresh?" do
+    before do
+      @time = Time.now
+      @mongo = Mongar::Mongo.new
+      @mongo.stub!(:last_replicated_at).and_return(@time)
+      @replica.stub!(:mongodb).and_return(@mongo)
+      @replica.destination = @collection
+    end
+    
     context "given the full_refresh condition is a time period" do
       before do
-        @collection = Mongar::Mongo::Collection.new
-        @replica.destination = @collection
         @replica.full_refresh :every => 3600
-        @time = Time.now
-        @collection.stub!(:last_refreshed_at).and_return(@time)
       end
       
       it "should return false if the time since the last refresh is less than 60 minutes" do
         @replica.do_full_refresh?.should be_false
       end
       it "should return true if the time since the last refresh is 60 minutes" do
-        @collection.stub!(:last_refreshed_at).and_return(@time - 3601)
+        @mongo.stub!(:last_replicated_at).and_return(@time - 3601)
         @replica.do_full_refresh?.should be_true
       end
       it "should return true if the last refresh time is nil" do
-        @collection.stub!(:last_refreshed_at).and_return(nil)
+        @mongo.stub!(:last_replicated_at).and_return(nil)
         @replica.do_full_refresh?.should be_true
       end
     end
@@ -278,13 +282,13 @@ describe "Mongar::Replica" do
       before do
         @mock_source = mock(Object, :something_changed? => false)
         @replica.source = @mock_source
-        @replica.full_refresh :if => Proc.new {
-          something_changed?
+        @replica.full_refresh :if => Proc.new { |last_replicated_date|
+          something_changed?(last_replicated_date)
         }
       end
       
       it "should return true if the proc evaluated in the source context is true" do
-        @mock_source.stub!(:something_changed?).and_return(true)
+        @mock_source.should_receive(:something_changed?).with(@time).and_return(true)
         @replica.do_full_refresh?.should be_true
       end
       it "should return false if the proc evaluated in the source context is false" do

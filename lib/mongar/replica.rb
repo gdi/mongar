@@ -100,15 +100,17 @@ class Mongar
       @mongodb ||= Mongar::Mongo.databases[mongodb_name]
     end
     
-    def do_full_refresh?
+    def do_full_refresh?(last_replicated_time = nil)
+      last_replicated_time ||= mongodb.last_replicated_at
+      
       if @full_refresh.nil?
         false
       elsif @full_refresh.is_a?(Proc)
-        source.instance_exec &@full_refresh
-      elsif destination.last_refreshed_at.nil?
+        source.instance_exec last_replicated_time, &@full_refresh
+      elsif last_replicated_time.nil?
         true
       else
-        (Time.now - destination.last_refreshed_at) > @full_refresh
+        (Time.now - last_replicated_time) > @full_refresh
       end
     end
     
