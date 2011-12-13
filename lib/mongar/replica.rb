@@ -26,25 +26,38 @@ class Mongar
     
     def run
       if do_full_refresh?
+        destination.mark_all_items_pending_deletion!
         
+        run_sync_for([:created_or_updated], Time.parse('1/1/1900 00:00:00'))
+        
+        destination.delete_all_items_pending_deletion!
       else
         last_replicated_at = mongodb.last_replicated_at
         
-        # find deleted
-        find(:deleted, last_replicated_at).each do |deleted_item|
-          destination.delete! source_object_to_primary_key_hash(deleted_item)
-        end
-        
-        # find created
-        find(:created, last_replicated_at).each do |created_item|
-          destination.create! source_object_to_hash(created_item)
-        end
-        
-        # find updated
-        find(:updated, last_replicated_at).each do |updated_item|
-          destination.update! source_object_to_primary_key_hash(updated_item), source_object_to_hash(updated_item, true)
-        end
+        run_sync_for([:deleted, :created, :updated], last_replicated_at)
       end
+    end
+    
+    def run_sync_for(types = [], last_replicated_at)
+      # find deleted
+      find(:deleted, last_replicated_at).each do |deleted_item|
+        destination.delete! source_object_to_primary_key_hash(deleted_item)
+      end if types.include?(:deleted)
+      
+      # find created
+      find(:created, last_replicated_at).each do |created_item|
+        destination.create! source_object_to_hash(created_item)
+      end if types.include?(:created)
+      
+      # find created & updated
+      find(:created, last_replicated_at).each do |created_item|
+        destination.create_or_update! source_object_to_primary_key_hash(created_item), source_object_to_hash(created_item)
+      end if types.include?(:created_or_updated)
+      
+      # find updated
+      find(:updated, last_replicated_at).each do |updated_item|
+        destination.update! source_object_to_primary_key_hash(updated_item), source_object_to_hash(updated_item, true)
+      end if types.include?(:updated)
     end
     
     def source_object_to_hash(object, exclude_primary_index = false)

@@ -28,14 +28,30 @@ describe "Mongar::Replica" do
       
       @last_replicated_time = Time.now - 86400
       @mongo.stub!(:last_replicated_at).and_return(@last_replicated_time)
+      
+      @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
     end
     
     context "requiring a full refresh" do
       before do
+        @replica.stub!(:find).with(:created, Time.parse("1/1/1900 00:00:00")).and_return([@created_client1])
         @replica.stub!(:do_full_refresh?).and_return(true)
-      end
-      it "should " do
         
+        @collection.stub!(:create_or_update!)
+        @collection.stub!(:mark_all_items_pending_deletion!)
+        @collection.stub!(:delete_all_items_pending_deletion!)
+      end
+      it "should create or update the items in the destination database" do
+        @collection.should_receive(:create_or_update!).with({ :name => 'Otis Co'}, { :name => 'Otis Co', :employee_count => 600 })
+        @replica.run
+      end
+      it "should mark all items pending delete" do
+        @collection.should_receive(:mark_all_items_pending_deletion!)
+        @replica.run
+      end
+      it "should delete items pending delete" do
+        @collection.should_receive(:delete_all_items_pending_deletion!)
+        @replica.run
       end
     end
     
@@ -46,12 +62,11 @@ describe "Mongar::Replica" do
         @deleted_client1 = Client.new(:name => "Widget Co", :employee_count => 500)
         @replica.stub!(:find).with(:deleted, @last_replicated_time).and_return([@deleted_client1])
         
-        @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
-        @replica.stub!(:find).with(:created, @last_replicated_time).and_return([@created_client1])
-        
         @updated_client1 = Client.new(:name => "ABC Co", :employee_count => 700)
         @replica.stub!(:find).with(:updated, @last_replicated_time).and_return([@updated_client1])
         
+        @replica.stub!(:find).with(:created, @last_replicated_time).and_return([@created_client1])
+
         @collection.stub!(:delete!)
         @collection.stub!(:create!)
         @collection.stub!(:update!)
