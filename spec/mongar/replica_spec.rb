@@ -86,7 +86,7 @@ describe "Mongar::Replica" do
       end
       
       it "should update the items in the destination database" do
-        @collection.should_receive(:update!).with({ :name => 'ABC Co' }, { :employee_count => 700 })
+        @collection.should_receive(:update!).with({ :name => 'ABC Co' }, { :name => 'ABC Co', :employee_count => 700 })
         @replica.run
       end
       

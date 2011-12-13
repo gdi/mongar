@@ -3,9 +3,9 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 describe "Mongar::Mongo::Collection" do
   after(:all) do
     # Completely clear out the database
-    #mongo = Mongar::Mongo.new(:name => :default, 
-    #                          :database => :mongar_test)
-    #mongo.connection!.drop_database('mongar_test')
+    mongo = Mongar::Mongo.new(:name => :default, 
+                              :database => :mongar_test)
+    mongo.connection!.drop_database('mongar_test')
   end
   
   before do

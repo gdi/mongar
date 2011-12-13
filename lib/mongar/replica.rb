@@ -58,17 +58,15 @@ class Mongar
       
       # find updated
       find(:updated, last_replicated_at).each do |updated_item|
-        destination.update! source_object_to_primary_key_hash(updated_item), source_object_to_hash(updated_item, true)
+        destination.update! source_object_to_primary_key_hash(updated_item), source_object_to_hash(updated_item)
       end if types.include?(:updated)
     end
     
-    def source_object_to_hash(object, exclude_primary_index = false)
+    def source_object_to_hash(object)
       primary_index_name = self.primary_index.name.to_sym
       columns.inject({}) do |hash, column|
         name = column.name.to_sym
-        unless name == primary_index_name && exclude_primary_index
-          hash[name] = object.send(name)
-        end
+        hash[name] = object.send(name)
         hash
       end
     end
@@ -133,7 +131,7 @@ class Mongar
       finder_function = self.send("#{type}_finder".to_sym)
       return [] if finder_function.nil?
       # execute the finder proc on the source object with an argument of the last replicated date/time
-      source.instance_exec last_replicated_time, &finder_function
+      source.instance_exec(last_replicated_time, &finder_function) || []
     end
     
     [:deleted, :created, :updated].each do |finder_type|

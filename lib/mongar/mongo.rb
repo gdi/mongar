@@ -46,22 +46,5 @@ class Mongar
     def status_collection_accessor
       db[status_collection]
     end
-    
-    def last_replicated_at
-      #connection!.find(:collection_name => name).first
-    end
-    
-    def last_replicated_at=(date)
-    end
-    
-    def last_refreshed_at
-    end
-    
-    def last_refreshed_at=(date)
-    end
-    
-    def refreshed!
-      last_refreshed_at = Time.now
-    end
   end
 end

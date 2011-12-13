@@ -36,7 +36,7 @@ class Mongar
       destination = what.to_s.downcase.en.plural
     end
     
-    destination = Mongar::Mongo::Collection.new(:name => :destination)
+    destination = Mongar::Mongo::Collection.new(:name => destination)
     
     self.replicas ||= []
     replica = Replica.new(:source => source, :destination => destination)
