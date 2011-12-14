@@ -87,6 +87,7 @@ Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.
 
 * Actually setup indexes in MongoDB when the collections don't already exist
 * Command line argument or other way of forcing a full refresh of a replica
+* Ensure two instances of Mongar can't run simultaneously as it might cause problems with full refreshes
 
 == Contributing to mongar
  
