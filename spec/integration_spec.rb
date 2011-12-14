@@ -38,9 +38,14 @@ describe "Mongar" do
       collection.find_one({ :collection_name => 'domains' }).should_not be_nil
     end
     
-    it "should write to the stati collection for status" do
+    it "should handle an item that was added, updated, and deleted between runs" do
+      domain = Domain.create(:name => "test1.com", :client_id => 1)
+      domain.client_id = 2
+      domain.destroy
       
+      @mongar.run
       
+      @collection.find_one({:name => "test1.com"}).should be_nil
     end
   end
 end

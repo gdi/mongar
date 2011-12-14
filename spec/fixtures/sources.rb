@@ -38,14 +38,14 @@ class Domain
       last_replicated_date ||= Time.parse("1/1/1900 00:00:00")
       #puts "Created Since: #{last_replicated_date}"
       
-      @@items.find_all { |d| d.created_at && d.created_at > last_replicated_date }
+      @@items.find_all { |d| !d.deleted_at && d.created_at && d.created_at > last_replicated_date }
     end
     
     def updated_since(last_replicated_date)
       last_replicated_date ||= Time.parse("1/1/1900 00:00:00")
       #puts "Updated Since: #{last_replicated_date}"
       
-      @@items.find_all { |d| d.updated_at && d.updated_at > last_replicated_date }
+      @@items.find_all { |d| !d.deleted_at && d.updated_at && d.updated_at > last_replicated_date }
     end
   end
   
