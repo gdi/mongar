@@ -4,19 +4,23 @@
 
 Ruby GEM to facilitate replicating data from ActiveRecord (or any data represented by a set of Ruby classes) to MongoDB.
 
-== Contributing to mongar
- 
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
-* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
-* Fork the project
-* Start a feature/bugfix branch
-* Commit and push until you are happy with your contribution
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+== Adding to a rails project
+
+* Put your Mongar config into config/mongar.rb (See Example Config below)
+* Put the following code into script/mongar.rb
+
+  require 'mongar'
+  mongar_config = File.join(Rails.root, 'config', 'mongar.rb')
+  mongar = eval(File.read(mongar_config))
+  mongar.run
+
+* Run it with rails runner or script/runner script/mongar.rb
 
 == Example Config
 
   Mongar.configure do
+    log_level :debug
+    
     mongo :default do
       database 'mydb'
       user 'mongouser'
@@ -52,6 +56,12 @@ Ruby GEM to facilitate replicating data from ActiveRecord (or any data represent
       end
     
       column :name
+
+      column :employee_count do
+        transform do |value|
+          value.nil? ? 0 : value
+        end
+      end
     end
   
     replicate EmailAddress do
@@ -68,14 +78,19 @@ Ruby GEM to facilitate replicating data from ActiveRecord (or any data represent
         any_changes_since?(last_replicated_date)
       end
     
-      column :address do
-        index
-        transform do |value|
-          # some code to perform on the value
-        end
-      end
+      column :address
     end
   end
+
+== Contributing to mongar
+ 
+* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
+* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
+* Fork the project
+* Start a feature/bugfix branch
+* Commit and push until you are happy with your contribution
+* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
+* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
 == Copyright
 
