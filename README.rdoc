@@ -83,6 +83,11 @@ Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.
     end
   end
 
+== TODO
+
+* Actually setup indexes in MongoDB when the collections don't already exist
+* Command line argument or other way of forcing a full refresh of a replica
+
 == Contributing to mongar
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
