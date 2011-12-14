@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "mongar"
   gem.homepage = "http://github.com/gdi/mongar"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB}
+  gem.description = %Q{Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB}
   gem.email = "phil@greenviewdata.com"
   gem.authors = ["Philippe Green"]
   # dependencies defined in Gemfile
