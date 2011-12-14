@@ -6,15 +6,16 @@ Ruby GEM to facilitate replicating data from ActiveRecord (or any data represent
 
 == Adding to a rails project
 
-* Put your Mongar config into config/mongar.rb (See Example Config below)
-* Put the following code into script/mongar.rb
+Put your Mongar config into config/mongar.rb (See Example Config below)
+
+Put the following code into script/mongar.rb
 
   require 'mongar'
   mongar_config = File.join(Rails.root, 'config', 'mongar.rb')
   mongar = eval(File.read(mongar_config))
   mongar.run
 
-* Run it with rails runner or script/runner script/mongar.rb
+Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.rb
 
 == Example Config
 
