@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "mongar"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Philippe Green"]
@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/mongar.rb",
     "lib/mongar/column.rb",
+    "lib/mongar/logger.rb",
     "lib/mongar/mongo.rb",
     "lib/mongar/mongo/collection.rb",
     "lib/mongar/replica.rb",
