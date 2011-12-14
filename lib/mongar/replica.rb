@@ -1,11 +1,14 @@
 class Mongar
   class Replica
-    attr_accessor :source, :destination
+    include Mongar::Logger
+    
+    attr_accessor :source, :destination, :log_level
     attr_accessor :mongodb_name
     attr_accessor :created_finder, :deleted_finder, :updated_finder
     attr_accessor :columns
     
     def initialize(args = {})
+      self.log_level = args[:log_level]
       self.source = args[:source]
       self.destination = args[:destination]
       self.mongodb_name = args[:mongodb_name] || :default
@@ -27,6 +30,8 @@ class Mongar
     def run
       time = Time.now
       if do_full_refresh?
+        info "Running full refresh on Replica #{source.to_s} to #{destination.name}"
+        
         destination.mark_all_items_pending_deletion!
         
         run_sync_for([:created_or_updated], Time.parse('1/1/1900 00:00:00'))
@@ -34,6 +39,8 @@ class Mongar
         destination.delete_all_items_pending_deletion!
       else
         last_replicated_at = destination.last_replicated_at
+        
+        info "Running incremental replication on Replica #{source.to_s} to #{destination.name} from #{last_replicated_at}"
         
         run_sync_for([:deleted, :created_or_updated, :updated], last_replicated_at)
       end

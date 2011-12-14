@@ -189,11 +189,13 @@ describe "Mongar::Mongo::Collection" do
   end
   
   describe "#last_replicated_at" do
-    before do
-      response = @collection.last_replicated_at = Time.parse("1/1/2012 1:00:00")
-    end
     it "should return the last replicated_at date" do
+      response = @collection.last_replicated_at = Time.parse("1/1/2012 1:00:00")
       @collection.last_replicated_at.should == Time.parse("1/1/2012 1:00:00")
+    end
+    
+    it "should return 1/1/1900 00:00:00 if there was no last_replicated_at" do
+      @collection.last_replicated_at.should == Time.parse("1/1/1900 00:00:00")
     end
   end
 end

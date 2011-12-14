@@ -4,10 +4,13 @@ class Mongar
   autoload :Replica, 'mongar/replica'
   autoload :Column, 'mongar/column'
   autoload :Mongo, 'mongar/mongo'
+  autoload :Logger, 'mongar/logger'
+
+  include Mongar::Logger
 
   Linguistics.use :en  
   
-  attr_accessor :replicas, :status_collection
+  attr_accessor :replicas, :status_collection, :log_level
   
   class << self
     def configure &block
@@ -19,6 +22,11 @@ class Mongar
   
   def initialize
     self.replicas = []
+  end
+  
+  def log_level(level = nil)
+    return @log_level if level.nil?
+    @log_level = level
   end
   
   def run
@@ -36,10 +44,10 @@ class Mongar
       destination = what.to_s.downcase.en.plural
     end
     
-    destination = Mongar::Mongo::Collection.new(:name => destination)
+    destination = Mongar::Mongo::Collection.new(:name => destination, :log_level => log_level)
     
     self.replicas ||= []
-    replica = Replica.new(:source => source, :destination => destination)
+    replica = Replica.new(:source => source, :destination => destination, :log_level => log_level)
     replica.instance_eval(&block)
     self.replicas << replica
   end

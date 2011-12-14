@@ -75,6 +75,7 @@ describe "Mongar::Replica" do
         @collection.stub!(:update!)
         @collection.stub!(:last_replicated_at=)
       end
+      
       it "should delete the items in the destination database" do
         @collection.should_receive(:delete!).with({ :name => 'Widget Co' })
         @replica.run

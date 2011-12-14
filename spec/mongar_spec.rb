@@ -34,7 +34,7 @@ describe "Mongar" do
     end
     
     it "should initialize a new replica with the source and destination objects" do
-      Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection)
+      Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :log_level => nil)
       @mongar.replicate({ Client => 'clients' }, &@block)
     end
   end
