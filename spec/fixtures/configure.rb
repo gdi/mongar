@@ -5,7 +5,7 @@ Mongar.configure do
     status_collection 'stati'
   end
   
-  replicate Domain => 'domains' do
+  replicate Domain do
     column :name do
       primary_index
     end

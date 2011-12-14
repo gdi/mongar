@@ -28,7 +28,13 @@ Mongar.configure do
     column :allow_anyone_to_anyone_policy
   end
   
-  replicate Client
+  replicate Client do
+    column :id do
+      primary_index
+    end
+    
+    column :name
+  end
   
   replicate EmailAddress do
     no_deleted_finder
