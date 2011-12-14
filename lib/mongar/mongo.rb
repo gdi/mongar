@@ -22,7 +22,8 @@ class Mongar
     end
     
     [:database, :user, :password, :host, :port, :status_collection].each do |attr_name|
-      define_method(attr_name) do |val = nil|
+      define_method(attr_name) do |*args|
+        val = args.first
         return instance_variable_get(:"@#{attr_name}") if val.nil?
         instance_variable_set(:"@#{attr_name}", val)
       end

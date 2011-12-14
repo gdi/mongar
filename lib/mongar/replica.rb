@@ -40,7 +40,7 @@ class Mongar
       destination.last_replicated_at = time
     end
     
-    def run_sync_for(types = [], last_replicated_at)
+    def run_sync_for(types, last_replicated_at)
       # find deleted
       find(:deleted, last_replicated_at).each do |deleted_item|
         destination.delete! source_object_to_primary_key_hash(deleted_item)
