@@ -98,7 +98,7 @@ describe "Mongar::Replica" do
     end
   end
   
-  describe "#source_object_to_hash and #source_object_to_primary_key_hash" do
+  describe "retrieving data from source object" do
     before do
       class Client
         attr_accessor :name, :employee_count, :something_else
@@ -113,16 +113,37 @@ describe "Mongar::Replica" do
       @replica = Mongar::Replica.new(:source => Client, :destination => @collection)
       @replica.column :name do
         primary_index
+        transform :downcase
       end
-      @replica.column :employee_count
+      @replica.column :employee_count do
+        transform do |value|
+          value.nil? ? 0 : value
+        end
+      end
 
       @client1 = Client.new(:name => "Widget Co", :employee_count => 500)
+      @client2 = Client.new(:name => "Widget 2 Co", :employee_count => nil)
     end
-    it "should return a hash of all the columns" do
-      @replica.source_object_to_hash(@client1).should == {:name => "Widget Co", :employee_count => 500}
+    
+    describe "#source_object_to_hash" do
+      it "should return a hash of all the columns" do
+        @replica.source_object_to_hash(@client1).should == {:name => "widget co", :employee_count => 500}
+      end
+      it "should run any block transforms on the value" do
+        @replica.source_object_to_hash(@client2)[:employee_count].should == 0
+      end
+      it "should return any symbol transforms on the value" do
+        @replica.source_object_to_hash(@client1)[:name].should == 'widget co'
+      end
     end
-    it "should return a hash of just the primary key column and value" do
-      @replica.source_object_to_primary_key_hash(@client1).should == {:name => "Widget Co"}
+    
+    describe "#source_object_to_primary_key_hash" do
+      it "should return a hash of just the primary key column and value" do
+        @replica.source_object_to_primary_key_hash(@client1).should == {:name => "widget co"}
+      end
+      it "should return any symbol transforms on the value" do
+        @replica.source_object_to_primary_key_hash(@client1)[:name].should == 'widget co'
+      end
     end
   end
   

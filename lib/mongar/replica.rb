@@ -70,17 +70,16 @@ class Mongar
     end
     
     def source_object_to_hash(object)
-      primary_index_name = self.primary_index.name.to_sym
       columns.inject({}) do |hash, column|
         name = column.name.to_sym
-        hash[name] = object.send(name)
+        hash[name] = column.transform_this(object.send(name))
         hash
       end
     end
     
     def source_object_to_primary_key_hash(object)
-      column_name = primary_index.name.to_sym
-      { column_name => object.send(column_name) }
+      column = primary_index
+      { column.name => column.transform_this(object.send(column.name.to_sym)) }
     end
     
     def column(name, &block)

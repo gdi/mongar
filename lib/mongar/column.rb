@@ -4,7 +4,7 @@ class Mongar
     
     def initialize(args = {})
       self.name = args[:name]
-      self.transformation = lambda {}
+      self.transformation = nil
       self.is_indexed = false
       self.is_primary_index = false
     end
@@ -12,13 +12,14 @@ class Mongar
     def transform(proc_name = nil, &block)
       self.transformation = lambda do
         result = self
-        result = instance_exec(&block) if block_given?
+        result = instance_exec(result, &block) if block_given?
         result = result.send(proc_name) if proc_name
         result
       end
     end
     
     def transform_this(object)
+      return object unless transformation && transformation.is_a?(Proc)
       object.instance_exec(&transformation)
     end
     
