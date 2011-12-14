@@ -34,7 +34,7 @@ class Mongar
         
         destination.mark_all_items_pending_deletion!
         
-        run_sync_for([:created_or_updated], Time.parse('1/1/1900 00:00:00'))
+        run_sync_for([:created_or_updated], Time.parse('1/1/1902 00:00:00'))
         
         destination.delete_all_items_pending_deletion!
       else

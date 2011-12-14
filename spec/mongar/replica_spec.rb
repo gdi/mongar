@@ -34,7 +34,7 @@ describe "Mongar::Replica" do
     
     context "requiring a full refresh" do
       before do
-        @replica.stub!(:find).with(:created, Time.parse("1/1/1900 00:00:00")).and_return([@created_client1])
+        @replica.stub!(:find).with(:created, Time.parse("1/1/1902 00:00:00")).and_return([@created_client1])
         @replica.stub!(:do_full_refresh?).and_return(true)
         
         @collection.stub!(:create_or_update!)

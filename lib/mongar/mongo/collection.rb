@@ -33,7 +33,7 @@ class Mongar::Mongo
     
     def last_replicated_at
       status = status_collection.find_one({ :collection_name => name })
-      return Time.parse("1/1/1900 00:00:00") unless status && status['last_replicated_at']
+      return Time.parse("1/1/1902 00:00:00") unless status && status['last_replicated_at']
       status['last_replicated_at']
     end
     

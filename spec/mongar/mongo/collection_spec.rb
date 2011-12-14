@@ -194,8 +194,8 @@ describe "Mongar::Mongo::Collection" do
       @collection.last_replicated_at.should == Time.parse("1/1/2012 1:00:00")
     end
     
-    it "should return 1/1/1900 00:00:00 if there was no last_replicated_at" do
-      @collection.last_replicated_at.should == Time.parse("1/1/1900 00:00:00")
+    it "should return 1/1/1902 00:00:00 if there was no last_replicated_at" do
+      @collection.last_replicated_at.should == Time.parse("1/1/1902 00:00:00")
     end
   end
 end
