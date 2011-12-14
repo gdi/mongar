@@ -1,6 +1,6 @@
 = mongar
 
-Description goes here.
+Ruby GEM to facilitate replicating data from ActiveRecord (or any data represented by a set of Ruby classes) to MongoDB.
 
 == Contributing to mongar
  
