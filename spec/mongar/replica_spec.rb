@@ -26,6 +26,8 @@ describe "Mongar::Replica" do
       @mongo = Mongar::Mongo.new
       Mongar::Mongo.databases[:default] = @mongo
       
+      @replica.stub!(:default_time_selector).and_return(@time)
+      
       @last_replicated_time = Time.now - 86400
       @collection.stub!(:last_replicated_at).and_return(@last_replicated_time)
       
@@ -60,6 +62,8 @@ describe "Mongar::Replica" do
       before do
         @time = Time.parse("1/1/2011 00:00:00")
         Time.stub!(:now).and_return(@time)
+        @replica.stub!(:default_time_selector).and_return(@time)
+        
         @replica.stub!(:do_full_refresh?).and_return(false)
         
         @deleted_client1 = Client.new(:name => "Widget Co", :employee_count => 500)
@@ -368,6 +372,99 @@ describe "Mongar::Replica" do
     
     it "should return the mongo db based on the name" do
       @replica.mongodb.should == @fake_db
+    end
+  end
+  
+  describe "#db_time_selector" do
+    before do
+      @block = lambda {}
+    end
+    
+    it "should default to nil" do
+      @replica.db_time_selector.should be_nil
+    end
+    
+    it "should set the time sql to something else given an argument" do
+      @replica.db_time_selector &@block
+      @replica.db_time_selector.should == @block
+    end
+  end
+  
+  describe "#current_time_on_database_server" do
+    before do
+      class Client; end
+      @replica.source = Client
+      @time = Time.now
+    end
+    context "default time selector" do
+      it "should call default_time_selector" do
+        @replica.should_receive(:default_time_selector).with(Client).and_return(@time)
+        @replica.current_time_on_database_server.should == @time
+      end
+    end
+    
+    context "custom time selector" do
+      before do
+        @replica.db_time_selector do
+          current_db_time
+        end
+      end
+      
+      it "should call the custom time selector function on the source class" do
+        Client.should_receive(:current_db_time).and_return(@time)
+        @replica.current_time_on_database_server.should == @time
+      end
+    end
+  end
+  
+  describe "#default_time_selector" do
+    before do
+      class MockAdapters
+        class MysqlAdapter
+        end
+      
+        class Mysql2Adapter
+        end
+      
+        class SQLServerAdapter
+        end
+      end
+      
+      @time = Time.now
+    end
+    
+    context "mysql server backend" do
+      before do
+        @mock_connection = MockAdapters::MysqlAdapter.new
+        @mock_source = mock(Object, :connection => @mock_connection)
+        @mock_result = mock(Object, :fetch_row => [@time.to_s])
+      end
+      it "should run SELECT UTC_TIMESTAMP()" do
+        @mock_connection.should_receive(:execute).with("SELECT UTC_TIMESTAMP()").and_return(@mock_result)
+        @replica.default_time_selector(@mock_source).to_s.should == @time.to_s
+      end
+    end
+    
+    context "mysql server backend with mysql2 adapter" do
+      before do
+        @mock_connection = MockAdapters::Mysql2Adapter.new
+        @mock_source = mock(Object, :connection => @mock_connection)
+      end
+      it "should run SELECT UTC_TIMESTAMP()" do
+        @mock_connection.should_receive(:execute).with("SELECT UTC_TIMESTAMP()").and_return([[@time]])
+        @replica.default_time_selector(@mock_source).should == @time
+      end
+    end
+  
+    context "sql server backend" do
+      before do
+        @mock_connection = MockAdapters::SQLServerAdapter.new
+        @mock_source = mock(Object, :connection => @mock_connection)
+      end
+      it "should run SELECT getutcdate() as date" do
+        @mock_connection.should_receive(:select_one).with("SELECT getutcdate() AS date").and_return({"date" => @time})
+        @replica.default_time_selector(@mock_source).should == @time      
+      end
     end
   end
 end

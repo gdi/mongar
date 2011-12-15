@@ -52,6 +52,10 @@ Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.
     end
   
     replicate Client do
+      db_time_selector do
+        current_time_on_db_server
+      end
+    
       column :id do
         primary_index
       end

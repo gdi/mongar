@@ -1,6 +1,16 @@
+class Mysql2Adapter
+  def execute(sql)
+    [[Time.now.utc]]
+  end
+end
+
 class Domain
   attr_accessor :name, :client_id
   attr_accessor :created_at, :updated_at, :deleted_at
+  
+  def self.connection
+    return Mysql2Adapter.new
+  end
   
   def initialize(args = {})
     args.each do |key, value|

@@ -4,7 +4,7 @@ class Mongar
     
     attr_accessor :source, :destination, :log_level
     attr_accessor :mongodb_name
-    attr_accessor :created_finder, :deleted_finder, :updated_finder
+    attr_accessor :created_finder, :deleted_finder, :updated_finder, :db_time_selector
     attr_accessor :columns
     
     def initialize(args = {})
@@ -24,11 +24,12 @@ class Mongar
       end
       self.updated_finder = Proc.new do |last_replicated_at|
         find(:all, :conditions => ["updated_at > ? AND deleted_at IS NULL", last_replicated_at])
-      end 
+      end
     end
     
     def run
-      time = Time.now
+      time = current_time_on_database_server
+      
       if do_full_refresh?
         info "Running full refresh on Replica #{source.to_s} to #{destination.name}"
         
@@ -148,6 +149,31 @@ class Mongar
       define_method("no_#{finder_type}_finder") do
         self.send("#{finder_type}_finder=".to_sym, nil)
       end
+    end
+    
+    def db_time_selector &block
+      return @db_time_selector unless block_given?
+      
+      @db_time_selector = block
+    end
+    
+    def default_time_selector(object)
+      adapter = object.connection.class.to_s
+      adapter = $1 if adapter =~ /::([^:]+)$/
+      
+      time = if adapter == 'MysqlAdapter'
+        Time.parse(object.connection.execute("SELECT UTC_TIMESTAMP()").fetch_row.first)
+      elsif adapter == 'Mysql2Adapter'
+        object.connection.execute("SELECT UTC_TIMESTAMP()").first.first
+      elsif adapter == 'SQLServerAdapter'
+        object.connection.select_one("SELECT getutcdate() AS date")['date']
+      end
+      
+      time.is_a?(Time) ? time : nil
+    end
+    
+    def current_time_on_database_server
+      @db_time_selector.nil? ? default_time_selector(source) : source.instance_exec(&@db_time_selector)
     end
   end
 end
