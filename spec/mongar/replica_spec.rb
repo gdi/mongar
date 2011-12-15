@@ -311,6 +311,11 @@ describe "Mongar::Replica" do
       @replica.destination = @collection
     end
     
+    it "should return true if the last_replicated_at is 1902" do
+      @collection.stub!(:last_replicated_at).and_return(Time.parse("1/1/1902 00:00:00"))
+      @replica.do_full_refresh?.should be_true
+    end
+    
     context "given the full_refresh condition is a time period" do
       before do
         @replica.full_refresh :every => 3600

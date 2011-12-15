@@ -123,7 +123,9 @@ class Mongar
     def do_full_refresh?(last_replicated_time = nil)
       last_replicated_time ||= destination.last_replicated_at
       
-      if @full_refresh.nil?
+      if last_replicated_time.nil? || last_replicated_time == Time.parse("1/1/1902 00:00:00")
+        true
+      elsif @full_refresh.nil?
         false
       elsif @full_refresh.is_a?(Proc)
         source.instance_exec last_replicated_time, &@full_refresh
