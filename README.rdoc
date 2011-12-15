@@ -88,7 +88,9 @@ Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.
   end
 
 == Contributing to mongar
- 
+
+Find this project on Pivotal Tracker here: https://www.pivotaltracker.com/projects/434475
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project
