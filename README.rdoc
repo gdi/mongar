@@ -36,7 +36,25 @@ deleted with a deleted_at column.
 You can customize the finder methods that Mongar uses to accommodate any data model or your own
 custom scopes.
 
-== Example Config
+== Minimal example config
+
+Given an ActiveRecord model call Domain with two attributes name and client_id:
+
+  Mongar.configure do
+    mongo :default do
+      database 'mydb'
+    end
+    
+    replicate Domain do
+      column :name do
+        primary_index
+      end
+      
+      column :client_id
+    end
+  end
+
+== Full example Config
 
   Mongar.configure do
     # Currently we only log to STDOUT, we have plans to use a
