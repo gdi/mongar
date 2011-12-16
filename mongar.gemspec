@@ -47,7 +47,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.10"
-  s.summary = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
+  s.summary = "Easily replicate data from ActiveRecord (or any ruby class) to MongoDB.  For example, you can replicate data from a relational database like MySQL to MongoDB."
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
