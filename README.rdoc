@@ -1,8 +1,10 @@
 = mongar
 
+Replicate data from MySQL, PostgreSQL, SQLite, etc to MongoDB!
+
 Mongar will replicate data from ActiveRecord (or any data represented by a Ruby class) to MongoDB.
 For example, if you have MySQL data represented by ActiveRecord, you can easily replicate it to
-MongoDB with this GEM.
+MongoDB.
 
 == Adding to a rails project
 
@@ -27,7 +29,7 @@ Run it with
 
   rake mongar:run
 
-== Finders
+== Assumptions
 
 The default configuration assumes that you are using ActiveRecord and that are you using a plugin
 similar to acts_as_paranoid that never deletes records from the database but only marks them as
