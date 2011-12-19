@@ -28,7 +28,7 @@ class Mongar
     end
     
     def run
-      info "Replicating #{source.to_s} to #{mongodb}.#{destination.name}"
+      info "Replicating #{source.to_s} to #{mongodb.name}.#{destination.name}"
     
       if locked?
         info " * Skipping locked replica"
