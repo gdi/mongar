@@ -38,18 +38,28 @@ class Mongar
   def replicate(what, &block)
     if what.is_a?(Hash)
       source = what.keys.first
-      destination = what.values.first
+      destinations = what.values.first
     else
       source = what
-      destination = what.to_s.downcase.en.plural
+      destinations = what.to_s.downcase.en.plural
+    end  
+    destinations = [destinations] unless destinations.is_a?(Array)
+    
+    destinations = destinations.collect do |dest_def|
+      if dest_def.is_a?(Hash)
+        Mongar::Mongo::Collection.new(:name => dest_def.values.first, :mongodb_name => dest_def.keys.first, :log_level => log_level)
+      else
+        Mongar::Mongo::Collection.new(:name => dest_def, :log_level => log_level)
+      end
     end
     
-    destination = Mongar::Mongo::Collection.new(:name => destination, :log_level => log_level)
-    
     self.replicas ||= []
-    replica = Replica.new(:source => source, :destination => destination, :log_level => log_level)
-    replica.instance_eval(&block)
-    self.replicas << replica
+    
+    destinations.each do |destination|
+      replica = Replica.new(:source => source, :destination => destination, :log_level => log_level)
+      replica.instance_eval(&block)
+      self.replicas << replica
+    end
   end
   
   def mongo(name, &block)

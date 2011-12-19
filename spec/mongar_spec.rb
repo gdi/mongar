@@ -16,26 +16,47 @@ describe "Mongar" do
       
       @block = lambda {}
       @mock_replica = mock(Mongar::Replica)
-      Mongar::Replica.stub!(:new).and_return(@mock_replica)
       @mock_replica.stub!(:instance_eval)
+      Mongar::Replica.stub!(:new).and_return(@mock_replica)
       
       @collection = Mongar::Mongo::Collection.new
       Mongar::Mongo::Collection.stub!(:new).and_return(@collection)
     end
     
-    it "should make a new Mongar::Replica and pass it the block" do
-      @mock_replica.should_receive(:instance_eval).with(&@block)
-      @mongar.replicate({ Client => 'clients' }, &@block)
+    context "given a string" do
+      it "should make a new Mongar::Replica and pass it the block" do
+        @mock_replica.should_receive(:instance_eval).with(&@block)
+        @mongar.replicate({ Client => 'clients' }, &@block)
+      end
+
+      it "should populate Mongar.replicas with one Replica instance for Clients" do
+        @mongar.replicate({ Client => 'clients' }, &@block)
+        @mongar.replicas.should == [@mock_replica]
+      end
+    
+      it "should initialize a new replica with the source and destination objects" do
+        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :log_level => nil)
+        @mongar.replicate({ Client => 'clients' }, &@block)
+      end
     end
     
-    it "should populate Mongar.replicas with one Replica instance for Clients" do
-      @mongar.replicate({ Client => 'clients' }, &@block)
-      @mongar.replicas.should == [@mock_replica]
+    context 'given an array of destinations' do
+      before do
+        @mongar.replicate({ Client => ['clients', { :someotherdb => 'clients' }]})
+      end
+      
+      it "should create 2 replicas" do
+        @mongar.replicas.length.should == 2
+      end
     end
     
-    it "should initialize a new replica with the source and destination objects" do
-      Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :log_level => nil)
-      @mongar.replicate({ Client => 'clients' }, &@block)
+    context "given a hash" do
+      it "should initialize a new replica" do
+        Mongar::Mongo::Collection.should_receive(:new).with(:name => 'clients', 
+                                                            :mongodb_name => :someotherdb, 
+                                                            :log_level => nil)
+        @mongar.replicate(Client => { :someotherdb => 'clients'})
+      end
     end
   end
   
