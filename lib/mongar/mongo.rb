@@ -47,5 +47,9 @@ class Mongar
     def status_collection_accessor
       db[status_collection]
     end
+    
+    def time_on_server
+      db.eval("return new Date()")
+    end
   end
 end

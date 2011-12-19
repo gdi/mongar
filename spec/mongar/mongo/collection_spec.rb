@@ -198,4 +198,42 @@ describe "Mongar::Mongo::Collection" do
       @collection.last_replicated_at.should == Time.parse("1/1/1902 00:00:00")
     end
   end
+  
+  describe "#last_activity_at" do
+    it "should return the last activity date" do
+      @collection.last_activity_at = Time.parse("1/1/2012 1:01:00")
+      @collection.last_activity_at.should == Time.parse("1/1/2012 1:01:00")
+    end
+    
+    it "should return nil if the last activity date doesn't exist" do
+      @collection.last_activity_at.should be_nil
+    end
+  end
+  
+  describe "#last_activity_at=" do
+    context "with no status collection record" do
+      before do
+        @time1 = @collection.last_activity_at = Time.parse("1/1/2012 1:01:00")
+      end
+      
+      it "should save the last activity date" do
+        @collection.last_activity_at.should == @time1
+      end
+    end
+    
+    context "with an existing status collection record" do
+      before do
+        @time1 = @collection.last_replicated_at = Time.parse("1/1/2012 1:00:00")
+        @time2 = @collection.last_activity_at = Time.parse("1/1/2012 1:01:00")
+      end
+      
+      it "should save the last activity date" do
+        @collection.last_activity_at.should == @time2
+      end
+      
+      it "should not overwrite the last_replicated_at" do
+        @collection.last_replicated_at.should == @time1
+      end
+    end
+  end
 end

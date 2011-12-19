@@ -18,6 +18,7 @@ describe "Mongar::Replica" do
       
       @collection = Mongar::Mongo::Collection.new(:name => "clients")
       @replica = Mongar::Replica.new(:source => Client, :destination => @collection)
+      @replica.stub!(:locked?).and_return(false)
       @replica.column :name do
         primary_index
       end
@@ -32,6 +33,17 @@ describe "Mongar::Replica" do
       @collection.stub!(:last_replicated_at).and_return(@last_replicated_time)
       
       @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
+    end
+    
+    context "with a locked replica" do
+      before do
+        @replica.stub!(:locked?).and_return(true)
+      end
+      it "should return without doing anything" do
+        @replica.should_not_receive(:do_full_refresh?)
+        @replica.should_not_receive(:find)
+        @replica.run
+      end
     end
     
     context "requiring a full refresh" do
@@ -470,6 +482,29 @@ describe "Mongar::Replica" do
         @mock_connection.should_receive(:select_one).with("SELECT getutcdate() AS date").and_return({"date" => @time})
         @replica.default_time_selector(@mock_source).should == @time      
       end
+    end
+  end
+  
+  describe "#locked?" do
+    before do
+      @collection = Mongar::Mongo::Collection.new(:name => "clients")
+      @replica = Mongar::Replica.new(:destination => @collection)
+      
+      @ten_min_ago = Time.now - 600
+      @two_min_ago = Time.now - 120
+      @collection.stub!(:last_activity_at).and_return(nil)
+    end
+    
+    it "should return false if the last_activity is null" do
+      @replica.locked?.should be_false
+    end
+    it "should return false if the last_activity is more than 5 minutes ago" do
+      @collection.stub!(:last_activity_at).and_return(@ten_min_ago)
+      @replica.locked?.should be_false
+    end
+    it "should return true if the last_activity is not null and within 5 minutes of the current time" do
+      @collection.stub!(:last_activity_at).and_return(@two_min_ago)
+      @replica.locked?.should be_true
     end
   end
 end

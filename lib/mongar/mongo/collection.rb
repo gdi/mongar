@@ -40,8 +40,21 @@ class Mongar::Mongo
     def last_replicated_at=(date)
       info "Saving #{name} last_replicated_at to #{date}"
       status_collection.update({ :collection_name => name }, 
-                               { :collection_name => name, :last_replicated_at => date }, 
+                               { '$set' => { :collection_name => name, :last_replicated_at => date } }, 
                                { :upsert => true })
+    end
+    
+    def last_activity_at=(date)
+      debug "Saving #{name} last_activity_at to #{date}"
+      status_collection.update({ :collection_name => name },
+                               { '$set' => { :collection_name => name, :last_activity_at => date } },
+                               { :upsert => true })
+    end
+    
+    def last_activity_at
+      status = status_collection.find_one({ :collection_name => name })
+      return nil unless status && status['last_activity_at']
+      status['last_activity_at']
     end
     
     def find(key)

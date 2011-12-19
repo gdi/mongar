@@ -28,6 +28,11 @@ class Mongar
     end
     
     def run
+      if locked?
+        info "  * Skipping locked replica"
+        return
+      end
+      
       time = current_time_on_database_server
       
       if do_full_refresh?
@@ -176,6 +181,12 @@ class Mongar
     
     def current_time_on_database_server
       @db_time_selector.nil? ? default_time_selector(source) : source.instance_exec(&@db_time_selector)
+    end
+    
+    def locked?
+      last_replicated_at = destination.last_activity_at
+      return false if last_replicated_at.nil?
+      Time.now - last_replicated_at < 300
     end
   end
 end

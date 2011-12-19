@@ -88,4 +88,14 @@ describe "Mongar::Mongo" do
       Mongar::Mongo.new.status_collection.should == 'statuses'
     end
   end
+  
+  describe "#time_on_server" do
+    before do
+      @mongo = Mongar::Mongo.new(:name => 'rspec_tests', 
+                                 :database => :rspec_tests)
+    end
+    it "should return a date/time" do
+      @mongo.time_on_server.should be_a_kind_of(Time)
+    end
+  end
 end
