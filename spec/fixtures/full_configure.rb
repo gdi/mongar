@@ -35,9 +35,9 @@ Mongar.configure do
 
   # Customized replica config to replicate the Client
   # model to the 'customers' mongo collection on the db
-  # defined in the :otherdb config above
-  
-  replicate Client => ['otherdb.clients', { :someotherdb => 'clients' }, 'clients'] do
+  # defined in the :otherdb config above as well as the
+  # default database
+  replicate Client => [{ :otherdb => 'clients' }, 'clients'] do
     # By default, Mongar will try to determine the time on the
     # backend database. The supported ActiveRecord database adapters
     # are MysqlAdapter, Mysql2Adapter, and SQLServerAdapter.
