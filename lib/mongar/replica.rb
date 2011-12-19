@@ -29,7 +29,7 @@ class Mongar
     
     def run
       if locked?
-        info "  * Skipping locked replica"
+        info " * Skipping locked replica"
         return
       end
       
