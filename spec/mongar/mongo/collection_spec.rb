@@ -210,6 +210,14 @@ describe "Mongar::Mongo::Collection" do
     end
   end
   
+  describe "#log_activity" do
+    it "should log the current mongodb time in the statuses collection" do
+      @collection.log_activity
+      @collection.last_activity_at.should be_a_kind_of(Time)
+      @collection.last_activity_at.should be_within(10).of(Time.now)
+    end
+  end
+  
   describe "#last_activity_at=" do
     context "with no status collection record" do
       before do

@@ -28,6 +28,8 @@ class Mongar
     end
     
     def run
+      info "Replicating #{source.to_s} to #{mongodb}.#{destination.name}"
+    
       if locked?
         info " * Skipping locked replica"
         return
@@ -37,8 +39,6 @@ class Mongar
       
       # Set the time back 1 second to make sure we don't miss any changes made mid-second
       time -= 1 unless time.nil?
-      
-      info "Replicating #{source.to_s} to #{destination.name}"
       
       if do_full_refresh?
         info " * Full refresh"
@@ -56,6 +56,7 @@ class Mongar
         run_sync_for([:deleted, :created_or_updated, :updated], last_replicated_at)
       end
       destination.last_replicated_at = time
+      destination.last_activity_at = nil
     end
     
     def run_sync_for(types, last_replicated_at)

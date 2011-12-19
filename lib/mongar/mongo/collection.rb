@@ -9,6 +9,7 @@ class Mongar::Mongo
       @name = args[:name]
       @replica = args[:replica]
       @log_level = args[:log_level]
+      @last_logged_activity = nil
     end
     
     def mongodb
@@ -51,6 +52,22 @@ class Mongar::Mongo
                                { :upsert => true })
     end
     
+    def log_activity
+      return unless should_log_activity?
+      debug "Logging activity for #{name}"
+      
+      # should be able to set last_activity_at = new Date() but I can't figure out how to get
+      # ruby's mongo library to evaluate it instead of setting it to the string "new Date()"
+      status_collection.update({ :collection_name => name },
+                               { '$set' => { :collection_name => name, :last_activity_at => mongodb.time_on_server } },
+                               { :upsert => true })
+      @last_logged_activity = Time.now
+    end
+    
+    def should_log_activity?
+      @last_logged_activity.nil? || Time.now - @last_logged_activity > 5
+    end
+    
     def last_activity_at
       status = status_collection.find_one({ :collection_name => name })
       return nil unless status && status['last_activity_at']
@@ -63,33 +80,45 @@ class Mongar::Mongo
     end
     
     def create(document)
+      log_activity
+      
       debug "#{name}.create #{document.inspect}"
       !collection.insert(document).nil?
     end
     
     def delete(key)
+      log_activity
+      
       debug "#{name}.delete #{key.inspect}"
       collection.remove(key, { :safe => true })
     end
     
     def update(key, document)
+      log_activity
+      
       debug "#{name}.update #{key.inspect} with #{document.inspect}"
       collection.update(key, document, { :safe => true })
     end
     
     def create_or_update(key, document)
+      log_activity
+      
       debug "#{name}.create_or_update #{key.inspect} with #{document.inspect}"
       
       collection.update(key, document, {:upsert => true, :safe => true})
     end
     
     def mark_all_items_pending_deletion
+      log_activity
+      
       info "   * Marking all items in #{name} for pending deletion"
       
       collection.update({ '_id' => { '$exists' => true } }, { "$set" => { :pending_deletion => true } }, { :multi => true, :safe => true })
     end
     
     def delete_all_items_pending_deletion
+      log_activity
+      
       info "   * Deleting all items in #{name} that are pending deletion"
       
       collection.remove({ :pending_deletion => true }, { :safe => true })

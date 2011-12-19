@@ -32,6 +32,8 @@ describe "Mongar::Replica" do
       @last_replicated_time = Time.now - 86400
       @collection.stub!(:last_replicated_at).and_return(@last_replicated_time)
       
+      @collection.stub!(:last_activity_at=)
+      
       @created_client1 = Client.new(:name => "Otis Co", :employee_count => 600)
     end
     
