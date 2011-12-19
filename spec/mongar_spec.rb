@@ -35,7 +35,7 @@ describe "Mongar" do
       end
     
       it "should initialize a new replica with the source and destination objects" do
-        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :log_level => nil)
+        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => nil, :log_level => nil)
         @mongar.replicate({ Client => 'clients' }, &@block)
       end
     end
@@ -52,9 +52,7 @@ describe "Mongar" do
     
     context "given a hash" do
       it "should initialize a new replica" do
-        Mongar::Mongo::Collection.should_receive(:new).with(:name => 'clients', 
-                                                            :mongodb_name => :someotherdb, 
-                                                            :log_level => nil)
+        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => :someotherdb, :log_level => nil)
         @mongar.replicate(Client => { :someotherdb => 'clients'})
       end
     end

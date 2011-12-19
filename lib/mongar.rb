@@ -45,18 +45,18 @@ class Mongar
     end  
     destinations = [destinations] unless destinations.is_a?(Array)
     
-    destinations = destinations.collect do |dest_def|
-      if dest_def.is_a?(Hash)
-        Mongar::Mongo::Collection.new(:name => dest_def.values.first, :mongodb_name => dest_def.keys.first, :log_level => log_level)
-      else
-        Mongar::Mongo::Collection.new(:name => dest_def, :log_level => log_level)
-      end
-    end
-    
     self.replicas ||= []
     
     destinations.each do |destination|
-      replica = Replica.new(:source => source, :destination => destination, :log_level => log_level)
+      database = nil
+      collection = if destination.is_a?(Hash)
+        database = destination.keys.first
+        Mongar::Mongo::Collection.new(:name => destination.values.first, :log_level => log_level)
+      else
+        Mongar::Mongo::Collection.new(:name => destination, :log_level => log_level)
+      end
+      
+      replica = Replica.new(:source => source, :destination => collection, :mongodb_name => database, :log_level => log_level)
       replica.instance_eval(&block)
       self.replicas << replica
     end
