@@ -35,8 +35,13 @@ class Mongar
       
       time = current_time_on_database_server
       
+      # Set the time back 1 second to make sure we don't miss any changes made mid-second
+      time -= 1 unless time.nil?
+      
+      info "Replicating #{source.to_s} to #{destination.name}"
+      
       if do_full_refresh?
-        info "Running full refresh on Replica #{source.to_s} to #{destination.name}"
+        info " * Full refresh"
         
         destination.mark_all_items_pending_deletion!
         
@@ -46,7 +51,7 @@ class Mongar
       else
         last_replicated_at = destination.last_replicated_at
         
-        info "Running incremental replication on Replica #{source.to_s} to #{destination.name} from #{last_replicated_at}"
+        info " * Incremental updates since #{last_replicated_at}"
         
         run_sync_for([:deleted, :created_or_updated, :updated], last_replicated_at)
       end
@@ -54,6 +59,8 @@ class Mongar
     end
     
     def run_sync_for(types, last_replicated_at)
+      info "   * Syncing #{types.join(', ')} items"
+      
       # find deleted
       find(:deleted, last_replicated_at).each do |deleted_item|
         destination.delete! source_object_to_primary_key_hash(deleted_item)

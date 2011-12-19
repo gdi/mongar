@@ -1,89 +1,157 @@
 = mongar
 
-!! This is still fresh off the oven and hasn't been thoroughly tested yet in production. !!
+Replicate data from MySQL, PostgreSQL, SQLite, etc to MongoDB!
 
-Ruby GEM to facilitate replicating data from ActiveRecord (or any data represented by a set of Ruby classes) to MongoDB.
+Mongar will replicate data from ActiveRecord (or any data represented by a Ruby class) to MongoDB.
+For example, if you have MySQL data represented by ActiveRecord, you can easily replicate it to
+MongoDB.
 
 == Adding to a rails project
 
+For now, you'll have to manually add Mongar to your Rails project.  We'll work on a Railtie for Rails 3 soon.
+
 Put your Mongar config into config/mongar.rb (See Example Config below)
 
-Put the following code into script/mongar.rb
+Put the following code into your Rakefile
 
   require 'mongar'
-  mongar_config = File.join(Rails.root, 'config', 'mongar.rb')
-  mongar = eval(File.read(mongar_config))
-  mongar.run
 
-Run it with rails runner (rails 3.x) or script/runner (rails 2.x) script/mongar.rb
+  namespace :mongar do
+    desc "Run mongar replication"
+    task :run => :environment do
+      mongar_config = File.join(Rails.root, 'config', 'mongar.rb')
+      mongar = eval(File.read(mongar_config))
+      mongar.run
+    end
+  end
 
-== Example Config
+Run it with 
+
+  rake mongar:run
+
+== Assumptions
+
+The default configuration assumes that you are using ActiveRecord and that are you using a plugin
+similar to acts_as_paranoid that never deletes records from the database but only marks them as
+deleted with a deleted_at column.
+
+You can customize the finder methods that Mongar uses to accommodate any data model or your own
+custom scopes.
+
+== Minimal example config
+
+Given an ActiveRecord model call Domain with two attributes name and client_id:
 
   Mongar.configure do
+    mongo :default do
+      database 'mydb'
+    end
+    
+    replicate Domain do
+      column :name do
+        primary_index
+      end
+      
+      column :client_id
+    end
+  end
+
+== Full example Config
+
+  Mongar.configure do
+    # Currently we only log to STDOUT, we have plans to use a
+    # plans to use a configurable logger.
+    # Valid log levels are :info and :debug
     log_level :debug
     
     mongo :default do
       database 'mydb'
+    end
+  
+    mongo :otherdb do
+      database 'myotherdb'
       user 'mongouser'
       password 'password'
       host '127.0.0.1'
       port 27017
+      
+      # By default Mongar uses the 'statuses' collection to
+      # keep track of the last replicated times, you can specify
+      # a custom collection name
+      status_collection :stati
     end
-  
-    mongo :otherdb do
-      database 'mydb'
-      user 'mongouser'
-      password 'password'
     
-      status_collection :statuses
+    # Minimal replica config to replicate the Domain model
+    # to the 'domains' mongo collection on the mongo db defined
+    # in the :default config above
+  
+    replicate Domain do
+      column :name do
+        primary_index
+      end
+      
+      column :client_id
     end
   
-    replicate Domain => 'domains' do
+    # Customized replica config to replicate the Client
+    # model to the 'customers' mongo collection on the db
+    # defined in the :otherdb config above
+    
+    replicate Client => 'customers' do
+      # Use the other mongo database 
       use_mongodb :otherdb
-    
-      full_refresh :every => 60.minutes
-    
-      column :uri do
-        primary_index
-        transform :downcase
-      end
-    
-      column :allow_anyone_to_anyone_policy
-    end
-  
-    replicate Client do
+      
+      # By default, Mongar will try to determine the time on the
+      # backend database. The supported ActiveRecord database adapters
+      # are MysqlAdapter, Mysql2Adapter, and SQLServerAdapter.
+      # You can use a custom function to determine the time on Client's
+      # backend database
       db_time_selector do
-        current_time_on_db_server
+        # this will run Client#get_db_time
+        get_db_time
       end
-    
-      column :id do
-        primary_index
-      end
-    
-      column :name
-
-      column :employee_count do
-        transform do |value|
-          value.nil? ? 0 : value
-        end
-      end
-    end
-  
-    replicate EmailAddress do
+      
+      # Items are never deleted
       no_deleted_finder
+      
+      # Customize your updated record finder.  The block is 
+      # run in the source class context
       set_updated_finder do |last_replicated_date|
         find(:all, :conditions => ['something > ?', last_replicated_date])
       end
+      
+      # Custom created item finder
       set_created_finder do |last_replicated_date|
         created_scope(last_replicated_date)
       end
     
+      # Run a full refresh of all items in the database based
+      # a condition returned by the Proc
       full_refresh :if => Proc.new do |last_replicated_date|
         # class eval'ed code
         any_changes_since?(last_replicated_date)
       end
-    
-      column :address
+      
+      # You can also refresh every N seconds
+      # full_refresh :every => 3600
+      
+      # Define your columns
+      column :id do
+        # The 'primary index' column is used to find items in the mongo collection
+        primary_index
+      end
+      
+      column :tag do
+        # Run the procedure :downcase on the value of Client#tag
+        transform :downcase
+      end
+      
+      column :employee_count do
+        # Run a block transformation on the value of Client#employee_count
+        transform do |value|
+          value.nil? ? 0 : value
+        end
+      end
     end
   end
 

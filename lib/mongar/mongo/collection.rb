@@ -38,7 +38,7 @@ class Mongar::Mongo
     end
     
     def last_replicated_at=(date)
-      info "Saving #{name} last_replicated_at to #{date}"
+      info "   * Updating #{name}.last_replicated_at to #{date}"
       status_collection.update({ :collection_name => name }, 
                                { '$set' => { :collection_name => name, :last_replicated_at => date } }, 
                                { :upsert => true })
@@ -84,13 +84,13 @@ class Mongar::Mongo
     end
     
     def mark_all_items_pending_deletion
-      info "Marking all items in #{name} for pending deletion"
+      info "   * Marking all items in #{name} for pending deletion"
       
       collection.update({ '_id' => { '$exists' => true } }, { "$set" => { :pending_deletion => true } }, { :multi => true, :safe => true })
     end
     
     def delete_all_items_pending_deletion
-      info "Deleting all items in #{name} that are pending deletion"
+      info "   * Deleting all items in #{name} that are pending deletion"
       
       collection.remove({ :pending_deletion => true }, { :safe => true })
     end

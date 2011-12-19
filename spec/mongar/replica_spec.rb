@@ -108,7 +108,7 @@ describe "Mongar::Replica" do
       end
       
       it "should set the last replicated at time to the time the run started" do
-        @collection.should_receive(:last_replicated_at=).with(@time)
+        @collection.should_receive(:last_replicated_at=).with(@time - 1)
         @replica.run
       end
     end
