@@ -1,8 +1,16 @@
 Mongar.configure do
+  # You should put log_level and log statements at the top of the configure block
+  
   # Currently we only log to STDOUT, we have plans to use a
   # plans to use a configurable logger.
-  # Valid log levels are :info and :debug
-  log_level :debug
+  # Valid log levels are :fatal, :error, :warn, :info, :debug
+  # Default is :debug
+  log_level :fatal
+  
+  # Set the log destination to standard out
+  # You can also specify a file name, it will rotate daily
+  # log '/tmp/mongar.log'
+  log :stdout
   
   mongo :default do
     database 'mydb'

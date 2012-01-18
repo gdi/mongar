@@ -1,14 +1,12 @@
 class Mongar::Mongo
   class Collection
-    include Mongar::Logger
-    
-    attr_reader :name, :log_level
+    attr_reader :name, :logger
     attr_accessor :replica
     
     def initialize(args = {})
       @name = args[:name]
       @replica = args[:replica]
-      @log_level = args[:log_level]
+      @logger = args[:logger] || Logger.new(nil)
       @last_logged_activity = nil
     end
     
@@ -39,14 +37,14 @@ class Mongar::Mongo
     end
     
     def last_replicated_at=(date)
-      info "   * Updating #{name}.last_replicated_at to #{date}"
+      logger.info "   * Updating #{name}.last_replicated_at to #{date}"
       status_collection.update({ :collection_name => name }, 
                                { '$set' => { :collection_name => name, :last_replicated_at => date } }, 
                                { :upsert => true })
     end
     
     def last_activity_at=(date)
-      debug "Saving #{name} last_activity_at to #{date}"
+      logger.debug "Saving #{name} last_activity_at to #{date}"
       status_collection.update({ :collection_name => name },
                                { '$set' => { :collection_name => name, :last_activity_at => date } },
                                { :upsert => true })
@@ -54,7 +52,7 @@ class Mongar::Mongo
     
     def log_activity
       return unless should_log_activity?
-      debug "Logging activity for #{name}"
+      logger.debug "Logging activity for #{name}"
       
       # should be able to set last_activity_at = new Date() but I can't figure out how to get
       # ruby's mongo library to evaluate it instead of setting it to the string "new Date()"
@@ -75,35 +73,35 @@ class Mongar::Mongo
     end
     
     def find(key)
-      debug "#{name}.find #{key.inspect}"
+      logger.debug "#{name}.find #{key.inspect}"
       collection.find_one(key)
     end
     
     def create(document)
       log_activity
       
-      debug "#{name}.create #{document.inspect}"
+      logger.debug "#{name}.create #{document.inspect}"
       !collection.insert(document).nil?
     end
     
     def delete(key)
       log_activity
       
-      debug "#{name}.delete #{key.inspect}"
+      logger.debug "#{name}.delete #{key.inspect}"
       collection.remove(key, { :safe => true })
     end
     
     def update(key, document)
       log_activity
       
-      debug "#{name}.update #{key.inspect} with #{document.inspect}"
+      logger.debug "#{name}.update #{key.inspect} with #{document.inspect}"
       collection.update(key, document, { :safe => true })
     end
     
     def create_or_update(key, document)
       log_activity
       
-      debug "#{name}.create_or_update #{key.inspect} with #{document.inspect}"
+      logger.debug "#{name}.create_or_update #{key.inspect} with #{document.inspect}"
       
       collection.update(key, document, {:upsert => true, :safe => true})
     end
@@ -111,7 +109,7 @@ class Mongar::Mongo
     def mark_all_items_pending_deletion
       log_activity
       
-      info "   * Marking all items in #{name} for pending deletion"
+      logger.info "   * Marking all items in #{name} for pending deletion"
       
       collection.update({ '_id' => { '$exists' => true } }, { "$set" => { :pending_deletion => true } }, { :multi => true, :safe => true })
     end
@@ -119,7 +117,7 @@ class Mongar::Mongo
     def delete_all_items_pending_deletion
       log_activity
       
-      info "   * Deleting all items in #{name} that are pending deletion"
+      logger.info "   * Deleting all items in #{name} that are pending deletion"
       
       collection.remove({ :pending_deletion => true }, { :safe => true })
     end

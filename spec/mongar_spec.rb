@@ -1,9 +1,76 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe "Mongar" do
-  describe ".configure" do
+  describe "#log" do
     before do
-      
+      @mongar = Mongar.new
+    end
+    it "should setup a logger for the file name specified" do
+      @mongar.log "/tmp/mongar_test.log"
+      @mongar.logger.instance_variable_get(:@logdev).instance_variable_get(:@filename).should == "/tmp/mongar_test.log"
+    end
+    it "should setup a logger for standard out" do
+      @mongar.log :stdout
+      @mongar.logger.instance_variable_get(:@logdev).instance_variable_get(:@dev).should be_a_kind_of(IO)
+    end
+  end
+  
+  describe "#log_level" do
+    before do
+      @mongar = Mongar.new
+    end
+    it "should set the log level on a logger created after the log_level statement" do
+      @mongar.log_level :fatal
+      @mongar.log :stdout
+      @mongar.logger.level.should == Logger::FATAL
+    end
+    it "should set the log level on a logger created before the log_level statement" do
+      @mongar.log :stdout
+      @mongar.log_level :fatal
+      @mongar.logger.level.should == Logger::FATAL
+    end
+  end
+  
+  describe "#set_log_level" do
+    before do
+      @mongar = Mongar.new
+      @mongar.log :stdout
+      @mongar.instance_variable_set(:@log_level, :info)
+      @mongar.set_log_level
+    end
+    
+    it "should set the log level on each logger" do
+      @mongar.logger.level.should == Logger::INFO
+    end
+    
+    it "should convert :info to Logger::INFO" do
+      @mongar.instance_variable_set(:@log_level, :info)
+      @mongar.set_log_level
+      @mongar.logger.level.should == Logger::INFO
+    end
+    
+    it "should convert :fatal to Logger::FATAL" do
+      @mongar.instance_variable_set(:@log_level, :fatal)
+      @mongar.set_log_level
+      @mongar.logger.level.should == Logger::FATAL
+    end
+    
+    it "should convert :error to Logger::ERROR" do
+      @mongar.instance_variable_set(:@log_level, :error)
+      @mongar.set_log_level
+      @mongar.logger.level.should == Logger::ERROR
+    end
+    
+    it "should convert :warn to Logger::WARN" do
+      @mongar.instance_variable_set(:@log_level, :warn)
+      @mongar.set_log_level
+      @mongar.logger.level.should == Logger::WARN
+    end
+    
+    it "should convert :debug to Logger::DEBUG" do
+      @mongar.instance_variable_set(:@log_level, :debug)
+      @mongar.set_log_level
+      @mongar.logger.level.should == Logger::DEBUG
     end
   end
   
@@ -12,6 +79,8 @@ describe "Mongar" do
       class Client
       end
       
+      @logger = mock(Logger)
+      Logger.stub!(:new).and_return(@logger)
       @mongar = Mongar.new
       
       @block = lambda {}
@@ -35,7 +104,7 @@ describe "Mongar" do
       end
     
       it "should initialize a new replica with the source and destination objects" do
-        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => nil, :log_level => nil)
+        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => nil, :logger => @logger)
         @mongar.replicate({ Client => 'clients' }, &@block)
       end
     end
@@ -52,7 +121,7 @@ describe "Mongar" do
     
     context "given a hash" do
       it "should initialize a new replica" do
-        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => :someotherdb, :log_level => nil)
+        Mongar::Replica.should_receive(:new).with(:source => Client, :destination => @collection, :mongodb_name => :someotherdb, :logger => @logger)
         @mongar.replicate(Client => { :someotherdb => 'clients'})
       end
     end

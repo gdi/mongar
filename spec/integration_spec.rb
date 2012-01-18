@@ -16,6 +16,10 @@ describe "Mongar" do
       @collection = Mongar::Mongo.databases[:default].db['domains']
     end
     
+    it "should have set the log level properly" do
+      @mongar.logger.level.should == Logger::FATAL
+    end
+    
     it "should add, delete, and update items properly" do
       # inserts
       domain = Domain.create(:name => "test.com", :client_id => 1)

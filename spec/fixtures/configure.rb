@@ -1,4 +1,7 @@
 Mongar.configure do
+  log :stdout
+  log_level :fatal
+
   mongo :default do
     database 'integration_spec'
     
