@@ -81,7 +81,7 @@ class Mongar::Mongo
       log_activity
       
       logger.debug "#{name}.create #{document.inspect}"
-      !collection.insert(document).nil?
+      !collection.insert(document, { :safe => true }).nil?
     end
     
     def delete(key)
@@ -95,7 +95,7 @@ class Mongar::Mongo
       log_activity
       
       logger.debug "#{name}.update #{key.inspect} with #{document.inspect}"
-      collection.update(key, document, { :safe => true })
+      collection.update(key, document, { :upsert => true, :safe => true })
     end
     
     def create_or_update(key, document)
