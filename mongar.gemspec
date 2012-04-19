@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{mongar}
-  s.version = "0.0.8"
+  s.name = "mongar"
+  s.version = "0.0.11"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Philippe Green"]
-  s.date = %q{2011-12-19}
-  s.description = %q{Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB}
-  s.email = %q{phil@greenviewdata.com}
+  s.date = "2012-04-19"
+  s.description = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
+  s.email = "phil@greenviewdata.com"
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
@@ -27,7 +27,6 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/mongar.rb",
     "lib/mongar/column.rb",
-    "lib/mongar/logger.rb",
     "lib/mongar/mongo.rb",
     "lib/mongar/mongo/collection.rb",
     "lib/mongar/replica.rb",
@@ -43,11 +42,11 @@ Gem::Specification.new do |s|
     "spec/mongar_spec.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/gdi/mongar}
+  s.homepage = "http://github.com/gdi/mongar"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.6.2}
-  s.summary = %q{Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB}
+  s.rubygems_version = "1.8.10"
+  s.summary = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
