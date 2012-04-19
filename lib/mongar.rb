@@ -89,6 +89,6 @@ class Mongar
   end
   
   def set_log_level
-    @logger.level = Logger.const_get(@log_level.upcase)
+    @logger.level = Logger.const_get(@log_level.to_s.upcase)
   end
 end
