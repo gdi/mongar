@@ -45,7 +45,7 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/gdi/mongar"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.10"
+  s.rubygems_version = "1.8.29"
   s.summary = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
 
   if s.respond_to? :specification_version then
@@ -53,7 +53,7 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_runtime_dependency(%q<linguistics>, [">= 0"])
-      s.add_runtime_dependency(%q<mongo>, [">= 0"])
+      s.add_runtime_dependency(%q<mongo>, ["= 1.12.3"])
       s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -61,7 +61,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rcov>, [">= 0"])
     else
       s.add_dependency(%q<linguistics>, [">= 0"])
-      s.add_dependency(%q<mongo>, [">= 0"])
+      s.add_dependency(%q<mongo>, ["= 1.12.3"])
       s.add_dependency(%q<rspec>, ["~> 2.3.0"])
       s.add_dependency(%q<yard>, ["~> 0.6.0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
@@ -70,7 +70,7 @@ Gem::Specification.new do |s|
     end
   else
     s.add_dependency(%q<linguistics>, [">= 0"])
-    s.add_dependency(%q<mongo>, [">= 0"])
+    s.add_dependency(%q<mongo>, ["= 1.12.3"])
     s.add_dependency(%q<rspec>, ["~> 2.3.0"])
     s.add_dependency(%q<yard>, ["~> 0.6.0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
