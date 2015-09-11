@@ -49,3 +49,5 @@ pkg
 
 .project
 
+.ruby-version
+.ruby-gemset
