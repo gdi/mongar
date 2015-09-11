@@ -53,12 +53,23 @@ class Mongar::Mongo
     def log_activity
       return unless should_log_activity?
       logger.debug "Logging activity for #{name}"
-      
-      # should be able to set last_activity_at = new Date() but I can't figure out how to get
-      # ruby's mongo library to evaluate it instead of setting it to the string "new Date()"
-      status_collection.update({ :collection_name => name },
-                               { '$set' => { :collection_name => name, :last_activity_at => mongodb.time_on_server } },
-                               { :upsert => true })
+
+      # MongoDB 2.6+ supports currentDate, so let's try that first.
+      begin
+        status_collection.update(
+          { :collection_name => name },
+          { '$currentDate' => { :last_activity_at => true }, '$set' => { :collection_name => name } },
+          { :upsert => true }
+        )
+      rescue => e
+        raise e unless e.to_s =~ /Invalid modifier specified \$currentDate/
+        # Fallback to an $eval to get the date (gross).
+        status_collection.update(
+          { :collection_name => name },
+          { '$set' => { :collection_name => name, :last_activity_at => mongodb.time_on_server } },
+          { :upsert => true }
+        )
+      end
       @last_logged_activity = Time.now
     end
     

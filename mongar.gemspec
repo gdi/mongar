@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "mongar"
-  s.version = "0.0.11"
+  s.version = "0.0.12"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Philippe Green"]
-  s.date = "2012-04-19"
+  s.date = "2015-09-11"
   s.description = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
   s.email = "phil@greenviewdata.com"
   s.extra_rdoc_files = [

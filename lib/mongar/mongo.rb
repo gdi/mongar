@@ -21,7 +21,7 @@ class Mongar
       @status_collection ||= 'statuses'
     end
     
-    [:database, :user, :password, :host, :port, :status_collection].each do |attr_name|
+    [:database, :auth_database, :auth_mechanism, :user, :password, :host, :port, :status_collection].each do |attr_name|
       define_method(attr_name) do |*args|
         val = args.first
         return instance_variable_get(:"@#{attr_name}") if val.nil?
@@ -30,10 +30,7 @@ class Mongar
     end
     
     def connection
-      @connection = ::Mongo::Connection.new(host, port)
-      return @connection if self.user.nil? || @connection.authenticate(user, password)
-      @connection.close
-      @connection = nil
+      ::Mongo::Connection.new(host, port)
     end
     
     def connection!
@@ -41,7 +38,14 @@ class Mongar
     end
     
     def db
-      @db ||= connection!.db(database.to_s)
+      return @db unless @db.nil?
+      @db = connection!.db(database.to_s)
+      unless self.user.nil?
+        db = self.auth_database.nil? ? @db : connection!.db(self.auth_database)
+        mechanism = self.auth_mechanism || 'SCRAM-SHA-1'
+        db.authenticate(user, password, :mechanism => mechanism)
+      end
+      @db
     end
     
     def status_collection_accessor
