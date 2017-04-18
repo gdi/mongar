@@ -13,7 +13,7 @@ describe "Mongar::Mongo::Collection" do
                                :database => :mongar_test)
                                
     @mongo.db.collections.each do |collection|
-        collection.remove
+        collection.drop
     end
     
     Mongar::Mongo.databases[:default] = @mongo

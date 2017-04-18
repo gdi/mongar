@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "mongar"
-  s.version = "0.0.12"
+  s.version = "0.0.13"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Philippe Green"]
-  s.date = "2015-09-11"
+  s.date = "2017-04-17"
   s.description = "Replicates data from ActiveRecord (or other Ruby data mapping class) to MongoDB"
   s.email = "phil@greenviewdata.com"
   s.extra_rdoc_files = [
@@ -52,30 +52,30 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<linguistics>, [">= 0"])
-      s.add_runtime_dependency(%q<mongo>, ["= 1.12.3"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_development_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_runtime_dependency(%q<linguistics>, ["~> 1.0"])
+      s.add_runtime_dependency(%q<mongo>, ["~> 2.4"])
+      s.add_development_dependency(%q<rspec>, ["~> 3.5"])
+      s.add_development_dependency(%q<rspec-mocks>, ["~> 3.5"])
+      s.add_development_dependency(%q<yard>, ["~> 0.9"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.14"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.6"])
     else
-      s.add_dependency(%q<linguistics>, [">= 0"])
-      s.add_dependency(%q<mongo>, ["= 1.12.3"])
-      s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-      s.add_dependency(%q<yard>, ["~> 0.6.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-      s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<linguistics>, ["~> 1.0"])
+      s.add_dependency(%q<mongo>, ["~> 2.4"])
+      s.add_dependency(%q<rspec>, ["~> 3.5"])
+      s.add_dependency(%q<rspec-mocks>, ["~> 3.5"])
+      s.add_dependency(%q<yard>, ["~> 0.9"])
+      s.add_dependency(%q<bundler>, ["~> 1.14"])
+      s.add_dependency(%q<jeweler>, ["~> 1.6"])
     end
   else
-    s.add_dependency(%q<linguistics>, [">= 0"])
-    s.add_dependency(%q<mongo>, ["= 1.12.3"])
-    s.add_dependency(%q<rspec>, ["~> 2.3.0"])
-    s.add_dependency(%q<yard>, ["~> 0.6.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
-    s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<linguistics>, ["~> 1.0"])
+    s.add_dependency(%q<mongo>, ["~> 2.4"])
+    s.add_dependency(%q<rspec>, ["~> 3.5"])
+    s.add_dependency(%q<rspec-mocks>, ["~> 3.5"])
+    s.add_dependency(%q<yard>, ["~> 0.9"])
+    s.add_dependency(%q<bundler>, ["~> 1.14"])
+    s.add_dependency(%q<jeweler>, ["~> 1.6"])
   end
 end
 
