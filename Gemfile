@@ -3,7 +3,7 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem 'linguistics', '~> 1.0'
+gem 'linguistics', '~> 2.1'
 gem 'mongo', '~> 2.4'
 
 # Add dependencies to develop your gem here.
