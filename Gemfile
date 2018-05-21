@@ -4,7 +4,7 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem 'linguistics', '~> 2.1'
-gem 'mongo', '~> 2.4'
+gem 'mongo', '2.4.1'
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
